@@ -1,0 +1,23 @@
+name: Publish Mechanical Edge
+
+on:
+  push:
+    branches:
+      - Mechanical
+  workflow_dispatch: # or manually
+    
+jobs:
+  publish_amd64:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: install snapcraft
+      run: sudo snap install snapcraft --classic
+    - name: build snap
+      run: |
+        sudo snapcraft --destructive-mode
+        sudo rm -rf $HOME/.config/snapcraft
+    - name: publish snap
+      env:
+        SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.STORE_LOGIN }}
+      run: snapcraft upload --release=edge freecad*.snap
