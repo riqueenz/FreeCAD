@@ -47,6 +47,7 @@
 #include <Base/GeometryPyCXX.h>
 #include <Base/Interpreter.h>
 #include <Base/PlacementPy.h>
+#include <Base/PyWrapParseTupleAndKeywords.h>
 #include <Base/RotationPy.h>
 #include <Base/VectorPy.h>
 
@@ -368,11 +369,12 @@ Py::Object View3DInventorPy::fitAll(const Py::Tuple& args)
 
 Py::Object View3DInventorPy::boxZoom(const Py::Tuple& args, const Py::Dict& kwds)
 {
-    static char* kwds_box[] = {"XMin", "YMin", "XMax", "YMax", nullptr};
+    static const std::array<const char *, 5> kwds_box{"XMin", "YMin", "XMax", "YMax", nullptr};
     short xmin, ymin, xmax, ymax;
-    if (!PyArg_ParseTupleAndKeywords(args.ptr(), kwds.ptr(), "hhhh", kwds_box,
-                                     &xmin, &ymin, &xmax, &ymax))
+    if (!Base::Wrapped_ParseTupleAndKeywords(args.ptr(), kwds.ptr(), "hhhh", kwds_box,
+                                            &xmin, &ymin, &xmax, &ymax)) {
         throw Py::Exception();
+    }
 
     SbBox2s box(xmin, ymin, xmax, ymax);
     getView3DIventorPtr()->getViewer()->boxZoom(box);
@@ -1627,7 +1629,7 @@ void View3DInventorPy::eventCallback(void * ud, SoEventCallback * n)
         // Type
         dict.setItem("Type", Py::String(std::string(e->getTypeId().getName().getString())));
         // Time
-        dict.setItem("Time", Py::String(std::string(e->getTime().formatDate().getString())));
+        dict.setItem("Time", Py::String(std::string(e->getTime().formatDate("%Y-%m-%d %H:%M:%S").getString())));
         SbVec2s p = n->getEvent()->getPosition();
         Py::Tuple pos(2);
         pos.setItem(0, Py::Int(p[0]));
@@ -2476,15 +2478,16 @@ Py::Object View3DInventorPy::setName(const Py::Tuple& args)
 
 Py::Object View3DInventorPy::toggleClippingPlane(const Py::Tuple& args, const Py::Dict& kwds)
 {
-    static char* keywords[] = {"toggle", "beforeEditing", "noManip", "pla", nullptr};
+    static const std::array<const char *, 5> keywords {"toggle", "beforeEditing", "noManip", "pla", nullptr};
     int toggle = -1;
     PyObject *beforeEditing = Py_False;
     PyObject *noManip = Py_True;
     PyObject *pyPla = Py_None;
-    if (!PyArg_ParseTupleAndKeywords(args.ptr(), kwds.ptr(), "|iO!O!O!", keywords,
+    if (!Base::Wrapped_ParseTupleAndKeywords(args.ptr(), kwds.ptr(), "|iO!O!O!", keywords,
                     &toggle, &PyBool_Type, &beforeEditing, &PyBool_Type, &noManip,
-                    &Base::PlacementPy::Type, &pyPla))
+                    &Base::PlacementPy::Type, &pyPla)) {
         throw Py::Exception();
+    }
 
     Base::Placement pla;
     if(pyPla!=Py_None)
