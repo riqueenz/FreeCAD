@@ -13,7 +13,9 @@ files: |
         src/Mod/Points|
         src/Mod/ReverseEngineering|
         src/Mod/Sketcher|
+        src/Mod/Surface|
         src/Mod/Start|
+        src/Mod/Test|
         src/Mod/Web
     )
 exclude: |
